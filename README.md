@@ -1,76 +1,71 @@
-AI Teacher Workspace
-SaaS para professores no qual a inteligência artificial está ligada aos dados e aos fluxos de trabalho de quem ensina — e não é um chatbot genérico. O projeto é um frontend completo, desenvolvido com React e TypeScript, com camada de services preparada para consumir uma API REST em .NET no futuro.
+# AI Teacher Workspace
 
-Cada sugestão da IA parte do que a professora já tem: planejamentos, materiais, banco de questões, avaliações e diário de aula. E cita de onde veio.
+API REST para uma plataforma SaaS de organização pedagógica que utiliza inteligência artificial para auxiliar professores no planejamento de aulas, na criação de questões e avaliações e na organização de materiais didáticos.
 
-Tecnologias
-C#
-.NET 9
-ASP.NET Core Web API
-Entity Framework Core
-PostgreSQL
-JWT (JSON Web Token)
-Apache Kafka
-Swagger / OpenAPI
-xUnit
-Moq
-Docker
+O diferencial do projeto é a construção de um assistente de IA contextualizado com os dados e fluxos de trabalho da professora. Em vez de funcionar como um chatbot genérico, a proposta é utilizar informações de turmas, planejamentos, materiais, banco de questões e diário de aula para gerar sugestões relevantes, com referências às fontes utilizadas.
 
-Funcionalidades
-Dashboard
-Abre com o dia da professora:
+O backend está sendo desenvolvido com C# e .NET 9, seguindo uma arquitetura organizada em camadas, com foco em separação de responsabilidades, regras de negócio, integração com serviços externos e testabilidade.
 
-Aulas de hoje, turmas ativas, média geral e avaliações abertas
-Próximas aulas
-Sugestões da IA, cada uma com a fonte (diário ou banco de questões)
-Andamento dos planejamentos da semana
-Materiais recentes
+## Tecnologias
 
-Meu Planejamento
-Calendário de aulas por data, com navegação por semana:
-Cada aula traz conteúdo, objetivo, duração, turma, status, atividades numeradas e materiais vinculados
-Adicionar, editar, mover de data e excluir aulas
-Botão de gerar plano com IA
-Sugestão de atividades de revisão
+- **C# / .NET 9** — desenvolvimento da API.
+- **ASP.NET Core Web API** — construção dos endpoints REST.
+- **Entity Framework Core** — mapeamento objeto-relacional e persistência de dados.
+- **PostgreSQL** — banco de dados relacional.
+- **JWT** — autenticação e autorização.
+- **Apache Kafka** — processamento assíncrono e comunicação orientada a eventos.
+- **Swagger / OpenAPI** — documentação e exploração dos endpoints.
+- **xUnit** — testes automatizados.
+- **Moq** — simulação de dependências nos testes unitários.
+- **Docker** — conteinerização e padronização do ambiente de execução.
 
-Disciplinas
-Conteúdos programáticos com progresso:
-Lista de turmas ligadas, quantidade de conteúdos e percentual concluído
-Cada tópico marcado como dado ou pendente
-Criação de novas disciplinas com nome, descrição e conteúdos
+## Funcionalidades da API
 
-Turmas
-Um cartão por turma:
-Média, frequência e andamento do programa
-Horário fixo e próxima aula
-Uma turma pode ter mais de uma disciplina
-Criação de novas turmas com nome, disciplinas, número de alunos e horário
+### Gestão de planejamento de aulas
+- Cadastro, consulta, edição, reagendamento e exclusão de planejamentos.
+- Organização das aulas por data, turma e disciplina.
+- Registro de objetivos, duração, conteúdos, atividades e materiais vinculados.
+- Preparação para geração de planos de aula com IA.
 
-Materiais
-Biblioteca de PDFs, DOCX, PPTX, imagens, links e textos:
-Envio de arquivos e registro de links ou textos
-Busca por texto e filtro por tipo
-Busca por assunto com IA
+### Gestão de disciplinas e conteúdos
+- Cadastro de disciplinas e conteúdos programáticos.
+- Associação de disciplinas às turmas.
+- Acompanhamento do progresso dos conteúdos ministrados.
+- Controle de tópicos concluídos e pendentes.
 
-Banco de Questões
-Questões reutilizáveis com filtros:
-Filtros por disciplina, assunto, dificuldade e tipo (múltipla escolha, discursiva, verdadeiro/falso e código)
-Criação e exclusão de questões
-Contagem de quantas vezes cada questão já foi usada
-Geração de questões com IA
+### Gestão de turmas
+- Cadastro e manutenção de turmas.
+- Associação de múltiplas disciplinas a uma turma.
+- Registro de quantidade de alunos e horários.
+- Organização de informações para acompanhamento pedagógico.
 
-Diário de Aula
-Registro contínuo do que foi dado:
-Dificuldades observadas e observações da professora
-Filtro por turma e por data
-Cada entrada vira contexto para as próximas sugestões da IA
+### Biblioteca de materiais
+- Organização de materiais didáticos, incluindo documentos, apresentações, imagens, links e textos.
+- Busca e filtragem por tipo e conteúdo.
+- Preparação para recuperação de informações relevantes para a IA.
 
-Assistente IA
-Conversa contextual com o trabalho da professora:
-Mostra o contexto ativo (turmas, planejamentos, materiais, questões, avaliações e registros de diário)
-Responde com fontes citadas
-Exemplos: gerar plano de aula, gerar questões, analisar uma avaliação, sugerir a próxima aula, encontrar materiais por assunto e sugerir atividades de revisão
+### Banco de questões
+- Cadastro e consulta de questões reutilizáveis.
+- Filtros por disciplina, assunto, dificuldade e tipo.
+- Suporte a questões objetivas, discursivas, verdadeiro ou falso e programação.
+- Registro da quantidade de utilizações de cada questão.
+- Preparação para geração de questões por IA.
 
-Configurações
-Perfil da professora 
-Resumo semanal
+### Diário de aula
+- Registro dos conteúdos ministrados.
+- Armazenamento de observações e dificuldades identificadas.
+- Consulta por turma e período.
+- Utilização dos registros como contexto para recomendações pedagógicas futuras.
+
+### Assistente de inteligência artificial
+- Integração planejada com um provedor de IA.
+- Recuperação de contexto a partir dos dados pedagógicos.
+- Geração de planos de aula, questões e atividades de revisão.
+- Sugestões para aulas futuras e análise de avaliações.
+- Respostas com referências às fontes utilizadas, permitindo rastrear a origem das informações.
+
+### Dashboard e acompanhamento
+- Endpoints para consolidação das aulas do dia e das próximas aulas.
+- Indicadores de turmas, desempenho e progresso dos planejamentos.
+- Resumo semanal das atividades pedagógicas.
+- Consulta de sugestões geradas a partir do contexto disponível.
