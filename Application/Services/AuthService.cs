@@ -8,8 +8,7 @@ namespace Application.Services;
 public class AuthService(
     IUserRepository repository, 
     IPasswordHasher<User> passwordHasher, 
-    ILogger<AuthService> logger,
-    ITwoFactorAuthService twoFactorAuthService
+    ILogger<AuthService> logger
 ) : IAuthService
 {
     public async Task Register(RegisterDto dto, CancellationToken cancellationToken)
@@ -39,20 +38,20 @@ public class AuthService(
         logger.LogInformation("Usuário criado com sucesso.");
     }
 
-    public async Task<LoginChallengeResponseDto> Login(LoginDto dto, CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Tentativa de login para o e-mail: {Email}", dto.Email);
+    //public async Task<LoginChallengeResponseDto> Login(LoginDto dto, CancellationToken cancellationToken)
+    //{
+    //    logger.LogInformation("Tentativa de login para o e-mail: {Email}", dto.Email);
 
-        var user = await repository.GetByEmailAsync(dto.Email);
+    //    var user = await repository.GetByEmailAsync(dto.Email);
 
-        if (user is null || !user.Active)
-            throw new UnauthorizedAccessException("E-mail ou senha inválidos.");
+    //    if (user is null || !user.Active)
+    //        throw new UnauthorizedAccessException("E-mail ou senha inválidos.");
 
-        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
+    //    var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
-        if (result == PasswordVerificationResult.Failed)
-            throw new UnauthorizedAccessException("E-mail ou senha inválidos.");
+    //    if (result == PasswordVerificationResult.Failed)
+    //        throw new UnauthorizedAccessException("E-mail ou senha inválidos.");
 
-        return await twoFactorAuthService.CreateChallenge(user, cancellationToken);
-    }
+    //    return await twoFactorAuthService.CreateChallenge(user, cancellationToken);
+    //}
 }
