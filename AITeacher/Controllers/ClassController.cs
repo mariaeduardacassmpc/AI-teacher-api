@@ -1,12 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿//using Application.Dtos.Auth;
+//using Application.Interfaces;
+//using Application.Services;
+//using Microsoft.AspNetCore.Mvc;
 
-namespace AITeacher.Controllers
-{
-    public class ClassController : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
-    }
-}
+//namespace AITeacher.Controllers;
+
+//[ApiController]
+//[Route("api/[controller]")]
+//public class ClassController(IClassService classService) : ControllerBase
+//{
+//    [HttpPost("register")]
+//    public async Task<IActionResult> Register(RegisterDto dto, CancellationToken cancellation)
+//    {
+//        await classService.Register(dto, cancellation);
+
+//        return Ok();
+//    }
+//}
