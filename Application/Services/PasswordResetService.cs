@@ -22,7 +22,7 @@ public class PasswordResetService(
     {
         logger.LogInformation("Solicitação de redefinição de senha recebida.");
 
-        var user = await repository.GetByEmailAsync(dto.Email);
+        var user = await repository.GetByEmailAsync(dto.Email, cancellation);
 
         if (user is null)
         {
@@ -64,14 +64,14 @@ public class PasswordResetService(
 
     public async Task ResetPassword(PasswordResetDto dto, CancellationToken cancellation)
     {
-        var cacheKey = $"password-reset:{dto.Code}";
+        var cacheKey = $"password-reset:{dto.Token}";
 
         if (!memoryCache.TryGetValue(cacheKey, out string? email))
         {
             throw new InvalidOperationException("Código de redefinição de senha inválido ou expirado.");
         }
 
-        var user = await repository.GetByEmailAsync(email!);
+        var user = await repository.GetByEmailAsync(email, cancellation);
 
         if (user is null)
         {

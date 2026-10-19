@@ -3,56 +3,71 @@ using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+
 namespace Application.Services;
 
 public class AuthService(
-    IUserRepository repository, 
-    IPasswordHasher<User> passwordHasher, 
-    ILogger<AuthService> logger,
-    ITwoFactorAuthService twoFactorAuthService
+    IUserRepository repository,
+    IPasswordHasher<User> passwordHasher,
+    ITokenService tokenService,
+    ILogger<AuthService> logger
 ) : IAuthService
 {
-    public async Task Register(RegisterDto dto, CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Criando usuário.");
-
-        var existingUser = await repository.GetByEmailAsync(dto.Email);
-
-        if (existingUser is not null)
-            throw new InvalidOperationException("E-mail já cadastrado.");
-
-        PasswordValidator.Validate(dto.Password);
-
-        var user = new User
-        {
-            Name = dto.Name,
-            Email = dto.Email,
-            PasswordHash = string.Empty,
-            Active = true
-        };
-
-        user.PasswordHash = passwordHasher.HashPassword(user, dto.Password);
-
-        await repository.AddAsync(user);
-        await repository.SaveChangesAsync();
-
-        logger.LogInformation("Usuário criado com sucesso.");
-    }
-
-    public async Task<LoginChallengeResponseDto> Login(LoginDto dto, CancellationToken cancellationToken)
+    public async Task<AuthResponseDto> Login(LoginDto dto, CancellationToken cancellation)
     {
         logger.LogInformation("Tentativa de login para o e-mail: {Email}", dto.Email);
 
-        var user = await repository.GetByEmailAsync(dto.Email);
+        var user = await repository.GetByEmailAsync(dto.Email, cancellation);
 
-        if (user is null || !user.Active)
-            throw new UnauthorizedAccessException("E-mail ou senha inválidos.");
+        if (user == null)
+        {
+            logger.LogWarning("Login falhou para o e-mail: {Email}", dto.Email);
+
+            throw new InvalidOperationException("E-mail ou senha inválidos.");
+        }
 
         var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
         if (result == PasswordVerificationResult.Failed)
-            throw new UnauthorizedAccessException("E-mail ou senha inválidos.");
+        {
+            logger.LogWarning("Senha inválida para o e-mail: {Email}", dto.Email);
+            throw new InvalidOperationException("E-mail ou senha inválidos.");
+        }
 
-        return await twoFactorAuthService.CreateChallenge(user, cancellationToken);
+        var (token, expiresAt) = tokenService.GenerateToken(user);
+
+        logger.LogInformation("Login realizado com sucesso. UserId: {UserId}", user.UserId);
+
+        return new AuthResponseDto
+        {
+            Token = token,
+            ExpiresAt = expiresAt,
+            User = new UserResponseDto
+            {
+                Id = user.UserId,
+                Email = user.Email
+            }
+        };
+    }
+   
+    public async Task Register(RegisterDto dto, CancellationToken cancellation)
+    {
+        var existingUser = await repository.GetByEmailAsync(dto.Email, cancellation);
+
+        if (existingUser != null)
+            throw new InvalidOperationException("Este e-mail já está cadastrado.");
+
+        var user = new User
+        {
+            Email = dto.Email,
+            PasswordHash = string.Empty,
+            Name = dto.Name 
+        };
+
+        user.PasswordHash = passwordHasher.HashPassword(user, dto.Password);
+
+        await repository.AddAsync(user, cancellation);
+
+        logger.LogInformation("Usuário registrado com sucesso. E-mail: {Email}", dto.Email);
     }
 }

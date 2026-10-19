@@ -3,7 +3,7 @@
 public class QuestionBank : BaseEntity
 {
     public int SubjectId { get; set; }
-    public string Topic { get; set; }
+    public string Topic { get; set; } = string.Empty;
     public Difficulty Difficulty { get; set; }
     public TypeQuestion Question { get; set; }
     public string? AnswerKey { get; set; }

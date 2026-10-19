@@ -3,23 +3,30 @@ using Domain.Entities;
 using Infra.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories;
+namespace Infra.Repositories;
 
 public class UserRepository(AITeacherDbContext context) : IUserRepository
 {
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellation)
     {
         return await context.Users
-            .FirstOrDefaultAsync(x => x.Email == email);
+            .FirstOrDefaultAsync(x => x.Email == email, cancellation);
     }
 
-    public async Task AddAsync(User user)
+    public async Task AddAsync(User user, CancellationToken cancellation)
     {
-        await context.Users.AddAsync(user);
+        await context.Users.AddAsync(user, cancellation);
+        await context.SaveChangesAsync(cancellation);
     }
 
     public async Task SaveChangesAsync()
     {
         await context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(User user, CancellationToken cancellation)
+    {
+        context.Update(user);
+        await context.SaveChangesAsync(cancellation);
     }
 }
