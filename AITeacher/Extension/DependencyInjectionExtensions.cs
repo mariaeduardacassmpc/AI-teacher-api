@@ -3,6 +3,7 @@ using Application.Services;
 using Domain.Entities;
 using Infra.Messaging;
 using Infra.Repositories;
+using Infra.Services;
 using Infrastructure;
 using Infrastructure.Messaging;
 using Microsoft.AspNetCore.Identity;
@@ -20,6 +21,7 @@ namespace AITeacher.Extension
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             services.AddHostedService<KafkaEmailConsumer>();
             services.AddSingleton<IKafkaProducer, KafkaProducer>(); services.AddHttpClient<IEmailService, EmailService>();
+            services.AddHttpClient<IGeminiService, GeminiService>();
 
             services.AddMemoryCache();
 

@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Confluent.Kafka;
 using Domain.Events;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,29 +11,33 @@ namespace Infrastructure.Messaging;
 
 public class KafkaEmailConsumer(
     IServiceScopeFactory scopeFactory,
-    ILogger<KafkaEmailConsumer> logger
+    ILogger<KafkaEmailConsumer> logger,
+    IConfiguration configuration
 ) : BackgroundService
 {
-    private readonly ConsumerConfig config = new()
-    {
-        BootstrapServers = "localhost:29092",
-        GroupId = "creditflow-email",
-        AutoOffsetReset = AutoOffsetReset.Earliest,
-        EnableAutoCommit = false,
-        EnableAutoOffsetStore = false
-    };
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var bootstrapServers = configuration["Kafka:BootstrapServers"];
+        var groupId = configuration["Kafka:GroupId"];
+        var passwordResetTopic = configuration["Kafka:Topics:aiteacher"];
+
+        var config = new ConsumerConfig
+        {
+            BootstrapServers = bootstrapServers,
+            GroupId = groupId,
+            AutoOffsetReset = AutoOffsetReset.Earliest,
+            EnableAutoCommit = false,
+            EnableAutoOffsetStore = false
+        };
+
         using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
 
         consumer.Subscribe(new[]
         {
-            "two-factor-code-requested",
-            "password-reset-requested"
+            passwordResetTopic
         });
 
-        logger.LogInformation("Consumidor de e-mails iniciado.");
+        logger.LogInformation("Consumidor de e-mails iniciado para o grupo {GroupId} ouvindo o tópico {Topic}.", groupId, passwordResetTopic);
 
         try
         {
@@ -44,61 +49,28 @@ public class KafkaEmailConsumer(
                 {
                     using var scope = scopeFactory.CreateScope();
 
-                    var emailService = scope.ServiceProvider
-                        .GetRequiredService<IEmailService>();
+                    var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-                    switch (result.Topic)
+                    if (result.Topic == passwordResetTopic)
                     {
-                        case "two-factor-code-requested":
-                            {
-                                var emailEvent =
-                                    JsonSerializer.Deserialize
-                                        <PasswordResetRequestedEvent>(
-                                            result.Message.Value);
+                        var emailEvent = JsonSerializer.Deserialize<PasswordResetRequestedEvent>(result.Message.Value);
 
-                                if (emailEvent is null ||
-                                    string.IsNullOrWhiteSpace(emailEvent.Email) ||
-                                    string.IsNullOrWhiteSpace(emailEvent.Code))
-                                {
-                                    logger.LogWarning(
-                                        "Evento 2FA inválido.");
-                                    break;
-                                }
+                        if (emailEvent is null ||
+                            string.IsNullOrWhiteSpace(emailEvent.Email) ||
+                            string.IsNullOrWhiteSpace(emailEvent.Code))
+                        {
+                            logger.LogWarning("Evento de recuperação inválido.");
+                            consumer.Commit(result);
+                            continue;
+                        }
 
-                                await emailService.SendTwoFactorCodeEmail(
-                                    emailEvent.Email,
-                                    emailEvent.Code);
+                        await emailService.SendPasswordResetEmail(
+                            emailEvent.Email,
+                            emailEvent.Code);
 
-                                logger.LogInformation(
-                                    "E-mail 2FA processado.");
-                                break;
-                            }
-
-                        case "password-reset-requested":
-                            {
-                                var emailEvent =
-                                    JsonSerializer.Deserialize
-                                        <PasswordResetRequestedEvent>(
-                                            result.Message.Value);
-
-                                if (emailEvent is null ||
-                                    string.IsNullOrWhiteSpace(emailEvent.Email) ||
-                                    string.IsNullOrWhiteSpace(emailEvent.Code))
-                                {
-                                    logger.LogWarning(
-                                        "Evento de recuperação inválido.");
-                                    break;
-                                }
-
-                                await emailService.SendPasswordResetEmail(
-                                    emailEvent.Email,
-                                    emailEvent.Code);
-
-                                logger.LogInformation(
-                                    "E-mail de recuperação processado.");
-                                break;
-                            }
+                        logger.LogInformation("E-mail de recuperação processado com sucesso.");
                     }
+
                     consumer.Commit(result);
                 }
                 catch (OperationCanceledException)

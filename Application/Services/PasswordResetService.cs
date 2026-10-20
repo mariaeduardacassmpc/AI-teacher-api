@@ -52,8 +52,7 @@ public class PasswordResetService(
                 },
                 cancellation);
 
-            logger.LogInformation(
-                "Evento de redefinição publicado no Kafka.");
+            logger.LogInformation("Evento de redefinição publicado no Kafka.");
         }
         catch
         {

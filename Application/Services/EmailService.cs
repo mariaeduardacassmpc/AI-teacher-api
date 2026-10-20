@@ -21,20 +21,20 @@ public class EmailService(
             <p>Se você não solicitou a redefinição, ignore este e-mail.</p>
             """;
 
-        return SendEmailAsync(email, "Redefinição de senha - CreditFlow", html);
+        return SendEmailAsync(email, "Redefinição de senha - AITeacher", html);
     }
 
     public Task SendTwoFactorCodeEmail(string email, string code)
     {
         var html = $"""
             <h2>Autenticação de dois fatores</h2>
-            <p>Seu código para acessar o CreditFlow é:</p>
+            <p>Seu código para acessar o AITeacher é:</p>
             <h1>{code}</h1>
             <p>Este código é válido por 5 minutos.</p>
             <p>Se você não tentou acessar sua conta, ignore este e-mail.</p>
             """;
 
-        return SendEmailAsync(email, "Código de autenticação - CreditFlow", html);
+        return SendEmailAsync(email, "Código de autenticação - AITeacher", html);
     }
 
     private async Task SendEmailAsync(string email, string subject, string html)
