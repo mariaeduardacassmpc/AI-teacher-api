@@ -10,6 +10,7 @@ public class AITeacherDbContext(
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Class> Classes => Set<Class>();
+    public DbSet<Subject> Subjects => Set<Subject>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

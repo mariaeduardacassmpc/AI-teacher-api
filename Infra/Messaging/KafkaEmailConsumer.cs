@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace Infrastructure.Messaging;
+namespace Infra.Messaging;
 
 public class KafkaEmailConsumer(
     IServiceScopeFactory scopeFactory,
@@ -17,6 +17,8 @@ public class KafkaEmailConsumer(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Task.Yield();
+
         var bootstrapServers = configuration["Kafka:BootstrapServers"];
         var groupId = configuration["Kafka:GroupId"];
         var passwordResetTopic = configuration["Kafka:Topics:aiteacher"];

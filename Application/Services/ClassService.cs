@@ -44,7 +44,6 @@ public class ClassService(
     {
         Name = request.Name.Trim(),
         TotalStudents = request.TotalStudents,
-        Hour = request.Hour,
         Schedules = request.Schedules
             .Select(s => new ClassSchedule
             {
@@ -60,7 +59,7 @@ public class ClassService(
         entity.Id,
         entity.Name,
         entity.TotalStudents,
-        entity.Hour,
+        entity.Subjects.Select(s => s.Id).ToList(),
         entity.Schedules
             .OrderBy(s => s.DayOfWeek)
             .ThenBy(s => s.StartTime)
