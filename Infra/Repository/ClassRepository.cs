@@ -1,4 +1,6 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs;
+using Application.Mappers;
+using Domain.Entities;
 using Domain.Interfaces;
 using Infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -9,30 +11,23 @@ public class ClassRepository(
     AITeacherDbContext context
 ) : IClassRepository
 {
+    private IQueryable<Class> GetBaseQuery()
+    {
+        return context.Classes
+            .AsNoTracking()
+            .Include(c => c.Subjects)
+            .Where(c => c.IsActive == true)
+            .AsSplitQuery();
+    }
+
     public async Task<Class?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await context.Classes
-            .AsNoTracking()
-            .Include(c => c.Schedules)
-            .Include(c => c.Subjects)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync(c => c.Id == id, ct);
+        return await GetBaseQuery().FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 
     public async Task<IReadOnlyList<Class>> GetAllAsync(CancellationToken ct)
     {
-        return await context.Classes
-            .AsNoTracking()
-            .Include(c => c.Schedules)
-            .Include(c => c.Subjects)
-            .AsSplitQuery()
-            .OrderBy(c => c.Name)
-            .ToListAsync(ct);
-    }
-
-    public Task<bool> ExistsAsync(int id, CancellationToken ct)
-    {
-        return context.Classes.AnyAsync(c => c.Id == id, ct);
+       return await GetBaseQuery().OrderBy(c => c.Name).ToListAsync(ct);
     }
 
     public async Task<Class> AddAsync(Class entity, CancellationToken ct)
@@ -45,63 +40,47 @@ public class ClassRepository(
     public async Task<bool> UpdateAsync(Class entity, CancellationToken ct)
     {
         var existing = await context.Classes
-            .Include(c => c.Schedules)
+            .Include(c => c.Subjects)
             .FirstOrDefaultAsync(c => c.Id == entity.Id, ct);
 
         if (existing is null)
             return false;
 
-        existing.Name = entity.Name;
-        existing.TotalStudents = entity.TotalStudents;
-        existing.Hour = entity.Hour;
+        ClassMapper.UpdateEntity(
+            new UpdateClassRequest
+            {
+                Name = entity.Name,
+                TotalStudents = entity.TotalStudents,
+                Schedule = entity.Schedule
+            },
+            existing);
 
-        SyncSchedules(existing, entity.Schedules);
+        existing.Subjects.Clear();
+
+        foreach (var subject in entity.Subjects)
+        {
+            var trackedSubject = await context.Subjects
+                .FirstOrDefaultAsync(s => s.Id == subject.Id, ct);
+
+            if (trackedSubject is not null)
+                existing.Subjects.Add(trackedSubject);
+        }
 
         await context.SaveChangesAsync(ct);
         return true;
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken ct)
+    public async Task<bool> ToggleActive(int id, CancellationToken ct)
     {
         var existing = await context.Classes.FirstOrDefaultAsync(c => c.Id == id, ct);
 
         if (existing is null)
             return false;
 
-        context.Classes.Remove(existing);
+        existing.IsActive = !existing.IsActive;
+
         await context.SaveChangesAsync(ct);
+
         return true;
-    }
-
-    private static void SyncSchedules(Class existing, List<ClassSchedule> incoming)
-    {
-        var incomingIds = incoming
-            .Where(s => s.Id != 0)
-            .Select(s => s.Id)
-            .ToHashSet();
-
-        existing.Schedules.RemoveAll(s => !incomingIds.Contains(s.Id));
-
-        foreach (var schedule in incoming)
-        {
-            var current = schedule.Id == 0
-                ? null
-                : existing.Schedules.FirstOrDefault(s => s.Id == schedule.Id);
-
-            if (current is null)
-            {
-                existing.Schedules.Add(new ClassSchedule
-                {
-                    DayOfWeek = schedule.DayOfWeek,
-                    StartTime = schedule.StartTime,
-                    EndTime = schedule.EndTime
-                });
-                continue;
-            }
-
-            current.DayOfWeek = schedule.DayOfWeek;
-            current.StartTime = schedule.StartTime;
-            current.EndTime = schedule.EndTime;
-        }
     }
 }

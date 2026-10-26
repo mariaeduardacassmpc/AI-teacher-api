@@ -1,10 +1,12 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class SubjectsController(
     ISubjectService service
@@ -18,9 +20,9 @@ public class SubjectsController(
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(int id, CancellationToken ct)
+    public async Task<IActionResult> GetById(int ids, CancellationToken ct)
     {
-        var subject = await service.GetByIdAsync(id, ct);
+        var subject = await service.GetByIdAsync(ids, ct);
         return subject is null ? NotFound() : Ok(subject);
     }
 

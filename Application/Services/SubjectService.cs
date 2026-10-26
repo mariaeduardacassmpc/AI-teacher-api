@@ -9,8 +9,7 @@ public class SubjectService(
     ISubjectRepository repository
 ) : ISubjectService
 {
-    public async Task<IReadOnlyList<SubjectSummaryResponse>> GetAllAsync(
-        CancellationToken ct)
+    public async Task<IReadOnlyList<SubjectSummaryResponse>> GetAllAsync(CancellationToken ct)
     {
         var subjects = await repository.GetAllAsync(ct);
 
@@ -23,11 +22,9 @@ public class SubjectService(
             .ToList();
     }
 
-    public async Task<SubjectResponse?> GetByIdAsync(
-        int id,
-        CancellationToken ct)
+    public async Task<SubjectResponse?> GetByIdAsync(int ids, CancellationToken ct)
     {
-        var subject = await repository.GetByIdAsync(id, ct);
+        var subject = await repository.GetByIdAsync(ids, ct);
 
         return subject is null
             ? null
@@ -38,19 +35,7 @@ public class SubjectService(
                 subject.Content,
                 ToClassSummaries(subject));
     }
-
-    public async Task<IReadOnlyList<ClassSummaryResponse>?> GetClassesAsync(
-        int id,
-        CancellationToken ct = default)
-    {
-        var subject = await repository.GetByIdAsync(id, ct);
-
-        return subject is null ? null : ToClassSummaries(subject);
-    }
-
-    public async Task<Subject> CreateAsync(
-        SaveSubjectRequest request,
-        CancellationToken ct)
+    public async Task<Subject> CreateAsync(SaveSubjectRequest request, CancellationToken ct)
     {
         var entity = new Subject
         {
@@ -62,10 +47,7 @@ public class SubjectService(
         return await repository.AddAsync(entity, ct);
     }
 
-    public async Task<bool> UpdateAsync(
-        int id,
-        SaveSubjectRequest request,
-        CancellationToken ct)
+    public async Task<bool> UpdateAsync(int id, SaveSubjectRequest request, CancellationToken ct)
     {
         var entity = await repository.GetByIdAsync(id, ct);
 
@@ -84,13 +66,11 @@ public class SubjectService(
         return repository.DeleteAsync(id, ct);
     }
 
-    private static List<ClassSummaryResponse> ToClassSummaries(
-        Subject subject) =>
+    private static List<ClassSummaryResponse> ToClassSummaries(Subject subject) =>
         subject.Classes
             .OrderBy(c => c.Name)
             .Select(c => new ClassSummaryResponse(
                 c.Id,
-                c.Name,
                 c.TotalStudents))
             .ToList();
 }

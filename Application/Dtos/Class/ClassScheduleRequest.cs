@@ -1,21 +1,20 @@
 ﻿namespace Application.DTOs;
 
-public class ClassScheduleRequest
-{   
-    public int Id { get; set; }
-    public DayOfWeek DayOfWeek { get; set; }
-    public TimeOnly StartTime { get; set; }
-    public TimeOnly EndTime { get; set; }
-}
-
-public class SaveClassRequest
+public class ClassRequest
 {
     public string Name { get; set; } = string.Empty;
     public int TotalStudents { get; set; }
-    public DateOnly Hour { get; set; }
-    public List<ClassScheduleRequest> Schedules { get; set; } = [];
+    public List<int> SubjectIds { get; set; } = [];
+    public string Schedule { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
 }
 
-public record ClassScheduleResponse(int Id,DayOfWeek DayOfWeek, TimeOnly StartTime, TimeOnly EndTime);
+public record ClassResponse(int Id, string Name, int TotalStudents, string Schedule, List<int> SubjectIds, bool IsActive);
 
-public record ClassResponse(int Id, string Name, int TotalStudents, DateOnly Hour, List<ClassScheduleResponse> Schedules);
+public class UpdateClassRequest
+{
+    public string? Name { get; set; }
+    public int? TotalStudents { get; set; }
+    public string? Schedule { get; set; }
+    public List<int>? SubjectIds { get; set; }
+}

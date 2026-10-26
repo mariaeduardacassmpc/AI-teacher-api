@@ -1,10 +1,12 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AITeacher.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ClassesController(
     IClassService service
@@ -25,23 +27,23 @@ public class ClassesController(
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] SaveClassRequest request, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] ClassRequest request, CancellationToken ct)
     {
         var created = await service.CreateAsync(request, ct);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] SaveClassRequest request, CancellationToken ct)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateClassRequest request, CancellationToken ct)
     {
         var updated = await service.UpdateAsync(id, request, ct);
         return updated ? NoContent() : NotFound();
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    [HttpPatch("{id:int}")]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken ct)
     {
-        var deleted = await service.DeleteAsync(id, ct);
+        var deleted = await service.ToggleActive(id, ct);
         return deleted ? NoContent() : NotFound();
     }
 }

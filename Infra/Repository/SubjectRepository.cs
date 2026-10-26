@@ -9,21 +9,22 @@ public class SubjectRepository(
     AITeacherDbContext context
 ) : ISubjectRepository
 {
+    private IQueryable<Subject> GetBaseQuery()
+    {
+        return context.Subjects
+            .AsNoTracking()
+            .Include(c => c.Classes)
+            .AsSplitQuery();
+    }
+
     public async Task<Subject?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await context.Subjects
-            .AsNoTracking()
-            .Include(s => s.Classes)
-            .FirstOrDefaultAsync(s => s.Id == id, ct);
+        return await GetBaseQuery().FirstOrDefaultAsync(s => s.Id == id, ct);
     }
 
     public async Task<IReadOnlyList<Subject>> GetAllAsync(CancellationToken ct)
     {
-        return await context.Subjects
-            .AsNoTracking()
-            .Include(s => s.Classes)
-            .OrderBy(s => s.Name)
-            .ToListAsync(ct);
+        return await GetBaseQuery().OrderBy(s => s.Name).ToListAsync(ct); ;
     }
 
     public async Task<Subject> AddAsync(Subject entity, CancellationToken ct)
