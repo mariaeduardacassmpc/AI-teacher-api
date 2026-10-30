@@ -4,6 +4,7 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Infra.Messaging;
 using Infra.Repositories;
+using Infra.Repository;
 using Infra.Services;
 using Infrastructure;
 using Microsoft.AspNetCore.Identity;
@@ -22,7 +23,9 @@ namespace AITeacher.Extension
             services.AddScoped<IClassService, ClassService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ISubjectRepository, SubjectRepository>();
-
+            services.AddScoped<IMaterialrepository, MaterialRepository>();
+            services.AddScoped<IMaterialService, MaterialService>();
+            services.AddScoped<IFileStorageService, LocalFileStorageService>();
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             services.AddHostedService<KafkaEmailConsumer>();
             services.AddSingleton<IKafkaProducer, KafkaProducer>(); services.AddHttpClient<IEmailService, EmailService>();

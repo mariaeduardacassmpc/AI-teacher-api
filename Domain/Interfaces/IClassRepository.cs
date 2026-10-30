@@ -9,4 +9,5 @@ public interface IClassRepository
     Task<Class> AddAsync(Class entity, CancellationToken ct);
     Task<bool> UpdateAsync(Class entity, CancellationToken ct);
     Task<bool> ToggleActive(int id, CancellationToken ct);
+    Task<List<Class>> GetByIdsAsync(List<int> ids, CancellationToken ct);
 }

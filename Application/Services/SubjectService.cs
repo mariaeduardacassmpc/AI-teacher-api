@@ -35,6 +35,7 @@ public class SubjectService(
                 subject.Content,
                 ToClassSummaries(subject));
     }
+
     public async Task<Subject> CreateAsync(SaveSubjectRequest request, CancellationToken ct)
     {
         var entity = new Subject
