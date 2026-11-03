@@ -11,6 +11,8 @@ public class AITeacherDbContext(
     public DbSet<Class> Classes => Set<Class>();
     public DbSet<Subject> Subjects => Set<Subject>();
     public DbSet<Material> Materials => Set<Material>();
+    public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
+    public DbSet<Planning> Plannings => Set<Planning>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +31,18 @@ public class AITeacherDbContext(
             .WithMany(s => s.Materials)
             .HasForeignKey(m => m.SubjectId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(j => j.Class)
+            .WithMany()
+            .HasForeignKey(j => j.SchoolClassId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(j => j.Planning)
+            .WithMany()
+            .HasForeignKey(j => j.PlanningId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(AITeacherDbContext).Assembly);

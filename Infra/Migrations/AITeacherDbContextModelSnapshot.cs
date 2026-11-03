@@ -88,6 +88,48 @@ namespace Infra.Migrations
                     b.ToTable("Classes");
                 });
 
+            modelBuilder.Entity("Domain.Entities.JournalEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Observations")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("PlanningId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SchoolClassId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanningId");
+
+                    b.HasIndex("SchoolClassId");
+
+                    b.ToTable("JournalEntries");
+                });
+
             modelBuilder.Entity("Domain.Entities.Material", b =>
                 {
                     b.Property<int>("Id")
@@ -102,6 +144,9 @@ namespace Infra.Migrations
                     b.Property<string>("FilePath")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("PlanningId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer");
@@ -125,9 +170,81 @@ namespace Infra.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PlanningId");
+
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Materials");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Planning", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Objective")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Plannings");
+                });
+
+            modelBuilder.Entity("Domain.Entities.PlanningActivity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlanningId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanningId");
+
+                    b.ToTable("PlanningActivity");
                 });
 
             modelBuilder.Entity("Domain.Entities.Subject", b =>
@@ -222,8 +339,30 @@ namespace Infra.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.JournalEntry", b =>
+                {
+                    b.HasOne("Domain.Entities.Planning", "Planning")
+                        .WithMany()
+                        .HasForeignKey("PlanningId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.Entities.Class", "Class")
+                        .WithMany()
+                        .HasForeignKey("SchoolClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Planning");
+                });
+
             modelBuilder.Entity("Domain.Entities.Material", b =>
                 {
+                    b.HasOne("Domain.Entities.Planning", null)
+                        .WithMany("Materials")
+                        .HasForeignKey("PlanningId");
+
                     b.HasOne("Domain.Entities.Subject", "Subject")
                         .WithMany("Materials")
                         .HasForeignKey("SubjectId")
@@ -231,6 +370,22 @@ namespace Infra.Migrations
                         .IsRequired();
 
                     b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("Domain.Entities.PlanningActivity", b =>
+                {
+                    b.HasOne("Domain.Entities.Planning", null)
+                        .WithMany("Activities")
+                        .HasForeignKey("PlanningId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Planning", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("Materials");
                 });
 
             modelBuilder.Entity("Domain.Entities.Subject", b =>

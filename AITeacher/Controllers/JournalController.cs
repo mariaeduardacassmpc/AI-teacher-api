@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Dtos.Journal;
+using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,19 +27,19 @@ public class JournalController(
         return result is null ? NotFound() : Ok(result);
     }
 
-    //[HttpPost]
-    //public async Task<IActionResult> Create([FromBody] ClassRequest request, CancellationToken ct)
-    //{
-    //    var created = await service.CreateAsync(request, ct);
-    //    return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-    //}
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] JournalRequest request, CancellationToken ct)
+    {
+        var created = await service.CreateAsync(request, ct);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
 
-    //[HttpPut("{id:int}")]
-    //public async Task<IActionResult> Update(int id, [FromBody] UpdateClassRequest request, CancellationToken ct)
-    //{
-    //    var updated = await service.UpdateAsync(id, request, ct);
-    //    return updated ? NoContent() : NotFound();
-    //}
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] JournalRequest request, CancellationToken ct)
+    {
+        var updated = await service.UpdateAsync(id, request, ct);
+        return updated ? NoContent() : NotFound();
+    }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)

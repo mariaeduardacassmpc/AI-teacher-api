@@ -25,6 +25,8 @@ namespace AITeacher.Extension
             services.AddScoped<ISubjectRepository, SubjectRepository>();
             services.AddScoped<IMaterialrepository, MaterialRepository>();
             services.AddScoped<IMaterialService, MaterialService>();
+            services.AddScoped<IJournalRepository, JournalRepository>();
+            services.AddScoped<IJournalService, JournalService>();
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             services.AddHostedService<KafkaEmailConsumer>();
