@@ -1,13 +1,13 @@
-﻿using Application.DTOs;
+﻿using Application.Dtos.Journal;
 using Domain.Entities;
 
 namespace Application.Interfaces;
 
 public interface IJournalService
 {
-    Task<IReadOnlyList<SubjectSummaryResponse>> GetAllAsync(CancellationToken ct);
-    Task<SubjectResponse?> GetByIdAsync(int ids, CancellationToken ct);
-    Task<Subject> CreateAsync(SaveSubjectRequest request, CancellationToken ct);
-    Task<bool> UpdateAsync(int id, SaveSubjectRequest request, CancellationToken ct);
+    Task<IReadOnlyList<JournalEntry>> GetAllAsync(CancellationToken ct);
+    Task<JournalEntry?> GetByIdAsync(int id, CancellationToken ct);
+    Task<JournalEntry> CreateAsync(JournalRequest request, CancellationToken ct);
+    Task<bool> UpdateAsync(int id, JournalRequest request, CancellationToken ct);
     Task<bool> DeleteAsync(int id, CancellationToken ct);
 }

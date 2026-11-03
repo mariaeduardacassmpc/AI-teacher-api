@@ -1,12 +1,12 @@
 ﻿using Domain.Entities;
 
-namespace Domain.Interfaces;
+namespace Application.Interfaces;
 
 public interface IJournalRepository
 {
-    Task<Subject> GetByIdAsync(int id, CancellationToken ct);
-    Task<IReadOnlyList<Subject>> GetAllAsync(CancellationToken ct);
-    Task<Subject> AddAsync(Subject subject, CancellationToken ct);
-    Task<bool> UpdateAsync(Subject subject, CancellationToken ct);
-    Task<bool> DeleteAsync(int id, CancellationToken ct);
+    Task<IReadOnlyList<JournalEntry>> GetAllAsync(CancellationToken ct);
+    Task<JournalEntry?> GetByIdAsync(int id, CancellationToken ct);
+    Task<JournalEntry> CreateAsync(JournalEntry entity, CancellationToken ct);
+    Task UpdateAsync(JournalEntry entity, CancellationToken ct);
+    Task DeleteAsync(JournalEntry entity, CancellationToken ct);
 }

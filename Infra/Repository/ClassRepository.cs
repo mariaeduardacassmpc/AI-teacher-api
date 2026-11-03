@@ -83,4 +83,13 @@ public class ClassRepository(
 
         return true;
     }
+
+    public async Task<List<Class>> GetByIdsAsync(
+    List<int> ids,
+    CancellationToken ct)
+    {
+        return await context.Classes
+            .Where(c => ids.Contains(c.Id))
+            .ToListAsync(ct);
+    }
 }
