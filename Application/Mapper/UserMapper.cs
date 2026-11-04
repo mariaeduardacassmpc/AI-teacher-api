@@ -14,4 +14,13 @@ public static class UserMapper
             Name = user.Name
         };
     }
+    public static User ToEntity(this CreateUserDto dto)
+    {
+        return new User
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            PasswordHash = string.Empty
+        };
+    }
 }

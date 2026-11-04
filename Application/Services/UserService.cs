@@ -22,11 +22,7 @@ public class UserService(
 
         PasswordValidator.Validate(dto.Password);
 
-        var user = new User
-        {
-            Email = dto.Email,
-            Name = dto.Name
-        };
+        var user = dto.ToEntity();
 
         user.PasswordHash = passwordHasher.HashPassword(user, dto.Password);
 

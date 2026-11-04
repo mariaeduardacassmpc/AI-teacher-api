@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Events;
+using Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,7 @@ using System.Security.Cryptography;
 namespace Application.Services;
 
 public class PasswordResetService(
-    IUserRepository repository,
+    IAuthRepository repository,
     IPasswordHasher<User> passwordHasher,
     ILogger<PasswordResetService> logger,
     IMemoryCache memoryCache,
@@ -81,7 +82,7 @@ public class PasswordResetService(
 
         user.PasswordHash = passwordHasher.HashPassword(user, dto.NewPassword);
 
-        await repository.SaveChangesAsync();
+        await repository.SaveChangesAsync(cancellation);
 
         memoryCache.Remove(cacheKey);
 
