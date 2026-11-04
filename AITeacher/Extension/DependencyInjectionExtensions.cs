@@ -19,6 +19,8 @@ namespace AITeacher.Extension
             services.AddScoped<IPasswordResetService, PasswordResetService>();
             services.AddScoped<ITokenService, JwtTokenService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IClassRepository, ClassRepository>();
             services.AddScoped<IClassService, ClassService>();
             services.AddScoped<ISubjectService, SubjectService>();

@@ -1,13 +1,14 @@
 ﻿using Application.Dtos.Auth;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
 public class AuthService(
-    IUserRepository repository,
+    IAuthRepository repository,
     IPasswordHasher<User> passwordHasher,
     ITokenService tokenService,
     ILogger<AuthService> logger
