@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Exceptions;
 using Application.Interfaces;
 using Application.Mappers;
 using Domain.Interfaces;
@@ -26,10 +27,10 @@ public class ClassService(
 
         var entity = await repository.GetByIdAsync(id, ct);
 
-        if (entity == null)
+        if (entity is null)
         {
             logger.LogWarning("Turma não encontrado. Id: {id}", id);
-            throw new InvalidOperationException($"Turma com Id {id} não encontrada.");
+            throw new NotFoundException($"Turma com Id {id} não encontrada.");
         }
         return ClassMapper.ToResponse(entity);
     }
@@ -49,7 +50,7 @@ public class ClassService(
             var foundIds = subjects.Select(s => s.Id).ToHashSet();
             var missingIds = subjectIds.Except(foundIds);
 
-            throw new KeyNotFoundException(
+            throw new NotFoundException(
                 $"Disciplinas não encontradas: {string.Join(", ", missingIds)}");
         }
 
@@ -70,8 +71,7 @@ public class ClassService(
         if (entity is null)
         {
             logger.LogWarning("Turma não encontrada. Id: {Id}", id);
-            throw new InvalidOperationException(
-                $"Turma com Id {id} não encontrada.");
+            throw new NotFoundException($"Turma com Id {id} não encontrada.");
         }
 
         ClassMapper.UpdateEntity(request, entity);
@@ -87,34 +87,42 @@ public class ClassService(
                 var foundIds = subjects.Select(s => s.Id).ToHashSet();
                 var missingIds = subjectIds.Except(foundIds);
 
-                throw new KeyNotFoundException($"Disciplinas não encontradas: {string.Join(", ", missingIds)}");
+                throw new NotFoundException($"Disciplinas não encontradas: {string.Join(", ", missingIds)}");
             }
 
-            entity.Subjects.Clear();
+            entity.Subjects = subjects;
 
-            foreach (var subject in subjects)
-                entity.Subjects.Add(subject);
         }
 
         var updated = await repository.UpdateAsync(entity, ct);
 
+        if (!updated)
+        {
+            throw new NotFoundException(
+                $"Turma com Id {id} não encontrada."
+            );
+        }
+
+        await repository.SaveChangesAsync(ct);
+
         if (updated)
             logger.LogInformation("Turma atualizada com sucesso. Id: {Id}", id);
 
-        return updated;
+        return true;
     }
 
-    public async Task<bool> ToggleActive(int id, CancellationToken ct)
+    public async Task<bool> ToggleActiveAsync(int id, CancellationToken ct)
     {
         logger.LogInformation("Alterando status da turma.");
 
-        var updated = await repository.ToggleActive(id, ct);
+        var updated = await repository.ToggleActiveAsync(id, ct);
 
         if (!updated)
         {
             logger.LogWarning("Turma não encontrada. Id: {Id}", id);
-            throw new KeyNotFoundException($"Turma com Id {id} não encontrada.");
+            throw new NotFoundException($"Turma com Id {id} não encontrada.");
         }
+        await repository.SaveChangesAsync(ct);
 
         logger.LogInformation("Status da turma alterado. Id: {Id}", id);
 

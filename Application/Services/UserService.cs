@@ -5,6 +5,7 @@ using Application.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Application.Exceptions;
 
 public class UserService(
     IUserRepository userRepository,
@@ -14,16 +15,18 @@ public class UserService(
     public async Task<UserDto> CreateUser(CreateUserDto dto, CancellationToken ct)
     {
         logger.LogInformation("Criando usuário com e-mail: {Email}", dto.Email);
+        var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
 
         var emailExists = await userRepository.EmailExistsAsync(dto.Email, null, ct);
 
         if (emailExists)
-            throw new InvalidOperationException("Já existe um cadastro com esse e-mail.");
+            throw new ConflictException("Já existe um cadastro com esse e-mail.");
 
         PasswordValidator.Validate(dto.Password);
 
         var user = dto.ToEntity();
 
+        user.Email = normalizedEmail;
         user.PasswordHash = passwordHasher.HashPassword(user, dto.Password);
 
         await userRepository.AddAsync(user, ct);
@@ -39,10 +42,11 @@ public class UserService(
         logger.LogInformation("Buscando todos os usuários");
 
         var users = await userRepository.GetAllAsync(ct);
+        var usersDto = users.Select(user => user.ToDto()).ToList();
 
-        logger.LogInformation("Foram encontrados {Count} usuários", users.Count());
+        logger.LogInformation("Foram encontrados {Count} usuários", usersDto.Count());
 
-        return users.Select(u => u.ToDto());
+        return usersDto;
     }
 
     public async Task<UserDto> GetById(int id, CancellationToken ct)
@@ -51,10 +55,10 @@ public class UserService(
 
         var user = await userRepository.GetByIdAsync(id, ct);
 
-        if (user == null)
+        if (user is null)
         {
             logger.LogWarning("Usuário não encontrado. Id: {UserId}", id);
-            throw new InvalidOperationException($"Usuário com Id {id} não encontrado.");
+            throw new NotFoundException($"Usuário com Id {id} não encontrado.");
         }
 
         return user.ToDto();
@@ -66,18 +70,19 @@ public class UserService(
 
         var existingUser = await userRepository.GetByIdAsync(id, ct);
 
-        if (existingUser == null)
+        if (existingUser is null)
         {
             logger.LogWarning("Usuário não encontrado para atualização. Id: {UserId}", id);
-            throw new InvalidOperationException($"Usuário com Id {id} não encontrado.");
+            throw new NotFoundException($"Usuário com Id {id} não encontrado.");
         }
 
-        var emailExists = await userRepository.EmailExistsAsync(dto.Email, id, ct);
+        var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
+        var emailExists = await userRepository.EmailExistsAsync(normalizedEmail, id, ct);
 
         if (emailExists)
             throw new InvalidOperationException("Já existe um cadastro com esse e-mail.");
 
-        existingUser.Email = dto.Email;
+        existingUser.Email = normalizedEmail;
         existingUser.Name = dto.Name;
         
         await userRepository.UpdateAsync(existingUser, ct);
@@ -96,7 +101,7 @@ public class UserService(
         if (user == null)
         {
             logger.LogWarning("Usuário não encontrado para exclusão. Id: {UserId}", id);
-            throw new InvalidOperationException($"Usuário com Id {id} não encontrado.");
+            throw new NotFoundException($"Usuário com Id {id} não encontrado.");
         }
 
         await userRepository.DeleteAsync(user, ct);
@@ -111,7 +116,7 @@ public class UserService(
         var existingUser = await userRepository.GetByIdAsync(id, ct);
 
         if (existingUser == null)
-            throw new InvalidOperationException($"Usuário com Id {id} não encontrado.");
+            throw new NotFoundException($"Usuário com Id {id} não encontrado.");
 
         var passwordResult = passwordHasher.VerifyHashedPassword(
             existingUser,
@@ -120,7 +125,14 @@ public class UserService(
         );
 
         if (passwordResult == PasswordVerificationResult.Failed)
-            throw new InvalidOperationException("A senha atual está incorreta.");
+            throw new BusinessException("A senha atual está incorreta.");
+
+        if (dto.CurrentPassword == dto.NewPassword)
+        {
+            throw new BusinessException(
+                "A nova senha deve ser diferente da atual."
+            );
+        }
 
         PasswordValidator.Validate(dto.NewPassword);
 

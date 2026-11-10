@@ -7,7 +7,6 @@ using System.Security.Claims;
 namespace AITeacher.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("api/[controller]")]
 public class UserController(
     IUserService userService
@@ -19,7 +18,7 @@ public class UserController(
     {
         var created = await userService.CreateUser(user, ct);
 
-        return CreatedAtAction(nameof(GetById), new { id = created.UserId }, userService);
+        return CreatedAtAction(nameof(GetById), new { id = created.UserId }, created);
     }
 
     [HttpGet]

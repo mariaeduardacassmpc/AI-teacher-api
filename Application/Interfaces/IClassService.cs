@@ -8,5 +8,5 @@ public interface IClassService
     Task<ClassResponse?> GetByIdAsync(int id, CancellationToken ct);
     Task<ClassResponse> CreateAsync(ClassRequest request, CancellationToken ct);
     Task<bool> UpdateAsync(int id, UpdateClassRequest request, CancellationToken ct);
-    Task<bool> ToggleActive(int id, CancellationToken ct);
+    Task<bool> ToggleActiveAsync(int id, CancellationToken ct);
 }

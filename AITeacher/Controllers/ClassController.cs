@@ -41,9 +41,9 @@ public class ClassesController(
     }
 
     [HttpPatch("{id:int}")]
-    public async Task<IActionResult> ToggleActive(int id, CancellationToken ct)
+    public async Task<IActionResult> ToggleActiveAsync(int id, CancellationToken ct)
     {
-        var deleted = await service.ToggleActive(id, ct);
-        return deleted ? NoContent() : NotFound();
+        var toggled = await service.ToggleActive(id, ct);
+        return toggled ? NoContent() : NotFound();
     }
 }

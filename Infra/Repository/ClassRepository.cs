@@ -16,24 +16,27 @@ public class ClassRepository(
         return context.Classes
             .AsNoTracking()
             .Include(c => c.Subjects)
-            .Where(c => c.IsActive == true)
             .AsSplitQuery();
     }
 
     public async Task<Class?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await GetBaseQuery().FirstOrDefaultAsync(c => c.Id == id, ct);
+        return await GetBaseQuery()
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 
     public async Task<IReadOnlyList<Class>> GetAllAsync(CancellationToken ct)
     {
-       return await GetBaseQuery().OrderBy(c => c.Name).ToListAsync(ct);
+        return await GetBaseQuery()
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync(ct);
     }
 
     public async Task<Class> AddAsync(Class entity, CancellationToken ct)
     {
         await context.Classes.AddAsync(entity, ct);
-        await context.SaveChangesAsync(ct);
+
         return entity;
     }
 
@@ -55,41 +58,47 @@ public class ClassRepository(
             },
             existing);
 
+        var subjectIds = entity.Subjects
+           .Select(s => s.Id)
+           .Distinct()
+           .ToList();
+
+        var subjects = await context.Subjects
+            .Where(s => subjectIds.Contains(s.Id))
+            .ToListAsync(ct);
+
         existing.Subjects.Clear();
 
-        foreach (var subject in entity.Subjects)
+        foreach (var subject in subjects)
         {
-            var trackedSubject = await context.Subjects
-                .FirstOrDefaultAsync(s => s.Id == subject.Id, ct);
-
-            if (trackedSubject is not null)
-                existing.Subjects.Add(trackedSubject);
+            existing.Subjects.Add(subject);
         }
 
-        await context.SaveChangesAsync(ct);
         return true;
     }
 
     public async Task<bool> ToggleActive(int id, CancellationToken ct)
     {
-        var existing = await context.Classes.FirstOrDefaultAsync(c => c.Id == id, ct);
+        var existing = await context.Classes
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
 
         if (existing is null)
             return false;
 
         existing.IsActive = !existing.IsActive;
 
-        await context.SaveChangesAsync(ct);
-
         return true;
     }
 
-    public async Task<List<Class>> GetByIdsAsync(
-    List<int> ids,
-    CancellationToken ct)
+    public async Task<List<Class>> GetByIdsAsync(List<int> ids, CancellationToken ct)
     {
         return await context.Classes
             .Where(c => ids.Contains(c.Id))
             .ToListAsync(ct);
+    }
+
+    public async Task SaveChangesAsync(CancellationToken ct)
+    {
+        await context.SaveChangesAsync(ct);
     }
 }
